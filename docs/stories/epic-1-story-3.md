@@ -4,7 +4,11 @@
 <!-- Context: Epic 1 (Autopoiesis), Story 3 of 10 (Track A) — depends on Story 0's contract and Story 2's loop -->
 <!-- Revised 2026-09-03 after Codex adversarial review, docs/reviews/codex-adversarial-review-1.md §1.8, §4.4-4.10 -->
 
-## Status: Draft — [ ] Not started (blocked on Story 0 and Story 2)
+## Status: [BLOCKED — external] Not started. Blocked on Story 0 and Story 2 (both complete) AND on
+Nebius approving Token Factory Sandboxes Beta access for this project — confirmed 2026-09-04 via
+real API testing, see "Pre-Story-3 readiness check" in Verification below. This is an external
+approval gate, not something fixable via more code/config on our side. Re-check periodically; do
+not attempt real Contree work until access is confirmed (403 → 200).
 
 ## Story
 
@@ -101,13 +105,14 @@ its real session/lifecycle behavior — not just confirm one command runs — be
 
 ## Tasks / Subtasks
 
-- [ ] Task 1 (exploration, do first): Map the real Contree interface and lifecycle
-  - [ ] Attempt MCP install (`uv tool install contree-mcp` or `pip install contree-mcp`)
-  - [ ] Run a session that creates a workspace, writes a file, runs a command reading that file,
-        and terminates — proving file persistence within a session and cleanup on termination
-  - [ ] Paste the exact real invocations and real response shapes into Verification below
-  - [ ] Update `research/RESEARCH.md` §7.1 and `docs/architecture/shared-contract.md` with the
-        real confirmed `SandboxAdapter` shape (or documented deviation)
+- [~] Task 1 (exploration, do first): Map the real Contree interface and lifecycle — PARTIALLY
+      DONE, then BLOCKED on external Beta approval, see Verification
+  - [x] Attempted MCP install — succeeded after fixing a real packaging bug (see Verification)
+  - [ ] BLOCKED: cannot run a real session (create/write/run/terminate) — account returns
+        `403 Insufficient permissions: list` on every sandbox API call, confirmed both before and
+        after submitting the Beta enrollment form. Resume this subtask once access is granted.
+  - [ ] Not yet done (blocked on the above)
+  - [ ] Not yet done (blocked on the above)
 - [ ] Task 2: Implement `write_file` and `run_command`/`run_tests` against Story 0's schemas
   - [ ] Implement both with the exact input/output shapes from AC 2 and AC 3
   - [ ] Implement and test the security rejections (absolute path, traversal, size cap, count cap)
@@ -164,9 +169,77 @@ its real session/lifecycle behavior — not just confirm one command runs — be
 
 ## Verification (fill in when the work is actually done — do not pre-fill or fabricate)
 
-```
-$ <paste the actual command run>
-<paste the actual output>
-```
+### Pre-Story-3 readiness check (2026-09-04) — real findings, story remains blocked
 
-Status after verification: **[ ] Not yet verified**
+**contree-mcp install — real packaging bug found and fixed:**
+```
+$ uv tool install contree-mcp
+Installed 1 executable: contree-mcp
+$ contree-mcp --help
+ImportError: cannot import name 'FastMCP' from 'mcp.server'
+```
+Root cause: `contree-mcp==0.4.0` declares an open-ended `mcp>=1.0.0` dependency; uv resolved
+`mcp==2.1.1`, which removed the `mcp.server.FastMCP` re-export that contree-mcp's code imports
+(FastMCP now only lives at `mcp.server.fastmcp`). Fixed by pinning an older, compatible version:
+```
+$ uv tool install contree-mcp --with "mcp<2.0.0" --force
+Installed 1 executable: contree-mcp  (mcp==1.29.1)
+$ contree-mcp --version
+contree-mcp/0.4.0 Python/3.12.12.final.0 macOS-13.7.8-x86_64-i386-64bit
+$ contree-mcp --help
+usage: contree-mcp [-h] [--profile PROFILE] [--auth-type {iam,jwt}] [--url URL] [--token TOKEN]
+                   [--project PROJECT] [--mode {stdio,http}] ...
+```
+**Real finding, worth reporting in Story 9's tooling feedback**: this is a genuine contree-mcp
+packaging bug (under-constrained dependency), not an environment issue — will still bite the next
+person who installs it fresh unless contree-mcp's own `mcp` constraint is tightened upstream.
+
+Registered via `claude mcp add --transport stdio contree -- /Users/bby/.local/bin/contree-mcp` —
+confirmed this takes effect on the *next* Claude Code session, not the current one (a newly
+registered MCP server doesn't hot-load mid-session).
+
+**Direct REST probe (bypassing the MCP layer entirely, to test raw account access):**
+```
+$ curl -s -w "%{http_code}" "https://api.tokenfactory.nebius.com/sandboxes/v1/operations" \
+    -H "Authorization: Bearer $NEBIUS_API_KEY"
+400 {"status": 400, "error": "Missing \"Project\" header"}
+```
+This confirmed a real, previously-undocumented finding: the Sandboxes REST API requires a
+`Project` header (Nebius project ID), separate from the Bearer token. With the project ID
+(obtained from the human operator, `aiproject-e00cnhtcrxav2x0x2x`) added as `NEBIUS_AI_PROJECT`
+in `.env`:
+```
+$ curl -s -w "%{http_code}" "https://api.tokenfactory.nebius.com/sandboxes/v1/operations" \
+    -H "Authorization: Bearer $NEBIUS_API_KEY" -H "Project: $NEBIUS_AI_PROJECT"
+403 {"status": 403, "error": "Insufficient permissions: list"}
+```
+Confirmed this isn't specific to the `list` action or that exact path:
+```
+$ curl -X POST .../sandboxes/v1/operations ... → 405 Method Not Allowed (not 403 — different check)
+$ curl .../sandboxes/v1/sandboxes ...          → 404 Not Found (different resource, doesn't exist)
+```
+**Root cause (found by the human operator, not by API exploration):** Token Factory Sandboxes
+Beta requires manual enrollment via a Microsoft Forms request (project ID + email + use-case
+description), reviewed by Nebius before per-project access is granted — this is documented on
+docs.tokenfactory.nebius.com/sandboxes/overview only as "we value your feedback, email
+contree@nebius.com," not as an explicit access-request form; the actual form was found separately.
+The human submitted the form (project `aiproject-e00cnhtcrxav2x0x2x`,
+`jamallwinn@gmail.com`, use-case description referencing this hackathon project).
+
+**Re-checked immediately after submission:**
+```
+$ curl -s -w "%{http_code}" "https://api.tokenfactory.nebius.com/sandboxes/v1/operations" \
+    -H "Authorization: Bearer $NEBIUS_API_KEY" -H "Project: $NEBIUS_AI_PROJECT"
+403 {"status": 403, "error": "Insufficient permissions: list"}
+```
+Identical to pre-submission — expected, not a failure. The form states Nebius will notify by
+email once approved, implying a manual review turnaround, not instant activation.
+
+**Conclusion: Sandbox access is NOT YET READY.** This is an external approval gate outside this
+project's control. Story 3 cannot proceed past this point (Task 1's remaining subtasks, and all of
+Tasks 2-6) until Nebius grants access. No further action is available on our side beyond waiting
+and periodically re-running the check above.
+
+Status after verification: **[BLOCKED — external, re-check periodically]**. Not a failure of this
+story's own work — everything checkable without live sandbox access has been checked, and one real
+packaging bug was found and fixed along the way.

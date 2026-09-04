@@ -132,8 +132,23 @@ Not deeply chased down (time-boxed); CoinGecko/Forkast/99Bitcoins/Dextools backg
   container image). Interfaces: Contree CLI, Contree Python SDK, Contree MCP server
   (`uv tool install contree-mcp`, or for Claude Code: `claude mcp add --transport stdio contree --
   $(which uvx) contree-mcp`). Primary call is a `contree_run`-style tool: `{"command": "...",
-  "image": "tag:python:3.11"}` → output + exit code. No raw REST endpoint path/SDK method
-  signature was confirmed — only the CLI/MCP surface. Pricing/billing not stated (Beta).
+  "image": "tag:python:3.11"}` → output + exit code.
+  **RESOLVED 2026-09-04 (Story 3 pre-work, see docs/stories/epic-1-story-3.md Verification):**
+  - **Real REST base path confirmed**: `https://api.tokenfactory.nebius.com/sandboxes` (was
+    previously undocumented). Requires a `Project` header (Nebius project ID) in addition to the
+    `Authorization: Bearer $NEBIUS_API_KEY` header — omitting it returns a real HTTP 400.
+  - **contree-mcp packaging bug found and fixed**: `contree-mcp==0.4.0`'s open-ended `mcp>=1.0.0`
+    dependency resolves to `mcp==2.1.1` by default, which crashes on import (`FastMCP` moved).
+    Fix: `uv tool install contree-mcp --with "mcp<2.0.0" --force` (resolves to `mcp==1.29.1`).
+  - **Access is gated behind manual Beta enrollment**, confirmed via a real `403 "Insufficient
+    permissions: list"` response even with a valid key + correct project header. Enrollment is via
+    a Microsoft Forms request (project ID + email + use-case description) reviewed by Nebius —
+    not instant, not self-service via API/CLI/console. As of 2026-09-04, enrollment has been
+    submitted for this project (`aiproject-e00cnhtcrxav2x0x2x`) and is pending approval.
+  - The REST base path and auth header requirements are now confirmed (above), but the actual
+    create/run/write/read/terminate method signatures are still unconfirmed — blocked on Beta
+    approval, since every real call returns 403 regardless of payload until then. Pricing/billing
+    not stated anywhere (Beta).
 - **Credits**: promo code `NEBIUS-DEVPOST-GLOBAL26` = $25 Token Factory credit; Nebius Builders
   Program (dev.nebius.com/builders) = another $25 + Tavily/Academy credits (secondary-sourced,
   not confirmed on Nebius's own site). Not verified whether credit covers Sandboxes (Beta) or

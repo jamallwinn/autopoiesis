@@ -36,3 +36,12 @@ the story whose Verification section holds the actual proof.
   and fixed along the way — timeout errors were being silently misclassified as non-retryable
   because the openai SDK sets `err.constructor.name`, not an own `.name` property; caught by the
   story's own test, fixed in `app/src/retry.ts`, re-verified with no regression.
+- **Story 3 blocked on an external gate (not a code/config problem)**: Token Factory Sandboxes
+  Beta requires manual enrollment approval from Nebius. Confirmed via real API calls — a valid key
+  + correct `Project` header still returns `403 Insufficient permissions: list`. Enrollment form
+  submitted; access pending. Found and fixed a real `contree-mcp` packaging bug along the way (its
+  open-ended `mcp>=1.0.0` dependency resolves to an incompatible `mcp==2.1.1` by default). Also
+  newly confirmed: the real Sandboxes REST base path
+  (`https://api.tokenfactory.nebius.com/sandboxes`) and its `Project` header requirement, both
+  previously undocumented. Track B (Stories 4/5) is unblocked and can proceed while this is
+  pending.

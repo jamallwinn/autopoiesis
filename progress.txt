@@ -83,3 +83,29 @@ stand — not a substitute for the per-story proof.
 2026-09-04 00:50 — Story 2 — COMPLETE — all 6 acceptance criteria verified with real evidence,
   including the timeout bug found+fixed via the story's own testing (not glossed over). Scope
   discipline confirmed: no Contree/Virtuals/chain references anywhere in app/.
+
+2026-09-04 01:10 — Sandbox readiness check (pre-Story-3) — installed contree-mcp via uv; hit a
+  real packaging bug (contree-mcp 0.4.0 declares open-ended `mcp>=1.0.0`, resolved to mcp==2.1.1
+  which removed the `FastMCP` re-export contree-mcp's code imports from `mcp.server` — crashed on
+  `--help`). Fixed by pinning `mcp<2.0.0` via `uv tool install contree-mcp --with "mcp<2.0.0"
+  --force` (resolved to mcp==1.29.1); `contree-mcp --help`/`--version` then worked.
+  Registered as an MCP server via `claude mcp add` (takes effect next session, not this one).
+  Direct REST probe against https://api.tokenfactory.nebius.com/sandboxes/v1/operations:
+  no Project header -> 400; with NEBIUS_AI_PROJECT header (project ID provided by the human,
+  aiproject-e00cnhtcrxav2x0x2x) -> 403 "Insufficient permissions: list". Confirmed via a second
+  probe this isn't specific to the list action (POST -> 405 Method Not Allowed on that path,
+  a different resource path -> 404) — it's an account-level gate.
+  **Human found the actual cause**: Token Factory Sandboxes Beta requires manual enrollment via a
+  Microsoft Forms request (project ID + email + use-case description), reviewed by Nebius before
+  access is granted. This is NOT a bug on our side and NOT fixable via API/CLI — it's a real,
+  external approval step. Sandbox is confirmed NOT YET READY; Story 3 is blocked until enrollment
+  is approved. Added NEBIUS_AI_PROJECT to .env.
+2026-09-04 01:20 — Human submitted the Beta enrollment form (project aiproject-e00cnhtcrxav2x0x2x,
+  jamallwinn@gmail.com, use-case description re: coding agent + sandboxed test-verified job
+  submission for the hackathon).
+2026-09-04 01:22 — Re-checked sandbox access post-submission: still HTTP 403 "Insufficient
+  permissions: list" — identical to pre-submission. Expected, not a failure: the form states
+  Nebius will notify by email once approved, implying manual review turnaround rather than instant
+  activation. Story 3 remains blocked pending that approval; nothing further to do here until
+  access is granted. Track B (Stories 4/5, Virtuals identity/token) has no dependency on this and
+  can proceed in parallel per the epic's build-order.

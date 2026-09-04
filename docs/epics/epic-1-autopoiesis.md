@@ -98,10 +98,15 @@ for no real reason). Story 0 is a hard prerequisite for everything else. After t
    real timeout-misclassification bug found and fixed (`app/src/retry.ts`: the SDK throws
    `APIConnectionTimeoutError` as `constructor.name`, not an own `.name` property). Full evidence
    in `docs/stories/epic-1-story-2.md`.
-3. **Story 3 — Code Execution via Token Factory Sandboxes (Contree)**: a versioned
-   `SandboxAdapter` implementation (per Story 0's contract) giving the reasoning loop real,
-   security-isolated write/execute/test capability against a Contree sandbox — local execution is
-   dev-only, not a substitute for a real Contree run.
+3. **[BLOCKED — external] Story 3 — Code Execution via Token Factory Sandboxes (Contree)**: a
+   versioned `SandboxAdapter` implementation giving the reasoning loop real, security-isolated
+   write/execute/test capability. **2026-09-04: confirmed blocked on Nebius's manual Sandboxes
+   Beta enrollment** — real API testing returns `403 Insufficient permissions: list` even with a
+   valid key + correct project header; enrollment form submitted
+   (`aiproject-e00cnhtcrxav2x0x2x`), pending Nebius review/approval (not instant). One real
+   packaging bug found and fixed along the way (`contree-mcp`'s under-constrained `mcp` dependency
+   — see `docs/stories/epic-1-story-3.md`). Track A is paused here; Track B (Stories 4/5) has no
+   dependency on this and can proceed in the meantime.
 4. **Story 4 — Virtuals Agent Identity: Wallet Setup on Base Sepolia**: `acp configure` →
    `acp agent create` → `acp agent add-signer` → `acp agent use` → `acp agent whoami`, producing a
    real funded testnet wallet with an explicit signer-custody policy.

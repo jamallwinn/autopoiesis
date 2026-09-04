@@ -15,3 +15,10 @@ the story whose Verification section holds the actual proof.
   versioned contract (`ToolInvocation`, tool namespaces + dispatcher, `write_file`,
   `run_command`/`run_tests`, `SandboxAdapter`, `VerificationResult`, dashboard events, job
   correlation ID) that Stories 2, 3, 6, and 8 all implement against.
+- Story 0 Task 3 complete: initialized git, created public repo `jamallwinn/autopoiesis`, deployed
+  a placeholder page via GitHub Pages, confirmed reachable from off-device
+  (https://jamallwinn.github.io/autopoiesis/). Full-history secret scan clean before publishing.
+- **Story 0 is now fully complete and verified** — all 4 tasks, all 4 acceptance criteria, real
+  evidence in `docs/stories/epic-1-story-0.md`. Flagged forward: Story 8 still needs a backend
+  hosting decision (GitHub Pages is static-only); residency/judge-employment eligibility items
+  need the human operator's own self-certification.

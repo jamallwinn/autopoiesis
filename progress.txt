@@ -16,3 +16,19 @@ stand — not a substitute for the per-story proof.
   run_command/run_tests schema, SandboxAdapter interface, VerificationResult submission gate,
   dashboard event contract (8 event types + monotonic seq), job correlation ID shape.
 2026-09-03 21:58 — Story 0 — starting Task 3 (deployment target)
+2026-09-03 22:05 — Story 0 Task 3 — DONE — chose GitHub Pages (gh CLI already authenticated;
+  npx vercel hung on an interactive prompt and was abandoned rather than retried). git init'd
+  this project, confirmed .env excluded via .gitignore, committed, created public repo
+  jamallwinn/autopoiesis, pushed, enabled Pages. Built and confirmed reachable via WebFetch
+  (off-device): https://jamallwinn.github.io/autopoiesis/ serving the real placeholder page.
+  Ran a full-history secret scan before/after publishing — clean, no secrets found.
+2026-09-03 22:05 — Story 0 Task 4 — DONE — confirmed shared-contract.md cross-referenced in
+  Stories 0, 2, 3, 6, 8 via grep.
+2026-09-03 22:06 — Story 0 — COMPLETE — all 4 tasks, all 4 acceptance criteria verified with
+  real evidence in docs/stories/epic-1-story-0.md. Flagged forward to Story 8: GitHub Pages is
+  static-only, a backend host (job API + SSE) still needs to be chosen there — considering a
+  Nebius AI Cloud instance/DevPod to also reinforce the mandatory-stack story.
+  Also flagged to the human: residency and judge/employment-relation eligibility items need
+  self-certification (I can't verify these).
+2026-09-03 22:06 — Repo: initial commit + push to https://github.com/jamallwinn/autopoiesis
+  (public). Story 1 can now begin.

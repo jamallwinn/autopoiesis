@@ -118,6 +118,12 @@ contract directly — do not invent a parallel event shape.
 - Which data source (`acp agent whoami` vs. a direct on-chain query) actually gives usable
   price/holder data for the bonding-curve token — Task 3 is an exploration task to resolve this,
   same as before, now feeding into the AC 5 economic panel specifically.
+- **(New — Story 0's Task 3 finding)** Story 0 proved GitHub Pages as a working *static* deployment
+  path, but static hosting alone cannot serve this story's backend (job-creation API, SSE event
+  stream). Task 1 below must decide and deploy a real backend hosting target — a Nebius AI
+  Cloud instance/DevPod is worth considering first since it would reinforce the mandatory
+  Nebius-usage story — before AC 11's public-URL requirement can be met for the real dashboard, not
+  just the placeholder page.
 
 ## Tasks / Subtasks
 

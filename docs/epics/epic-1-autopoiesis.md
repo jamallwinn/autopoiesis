@@ -75,10 +75,14 @@ for no real reason). Story 0 is a hard prerequisite for everything else. After t
   Story 6. Story 8's full data-wiring (not its shell/deployment) depends on Story 7. Story 9's
   final packaging (video, submission) depends on Story 8.
 
-0. **Story 0 — Preflight: Eligibility Gate, Shared Contract, Deployment Target** *(new, added
-   after Codex review)*: confirm eligibility against live rules, define the one versioned
-   cross-system contract Stories 2/3/6/8 all implement against, and prove a public HTTPS
-   deployment path works before it's needed under deadline pressure.
+0. **[x] Story 0 — Preflight: Eligibility Gate, Shared Contract, Deployment Target** *(new, added
+   after Codex review)* — **VERIFIED COMPLETE 2026-09-03.** Eligibility re-checked against the
+   live Devpost rules (no disclosed conflicts; residency and judge/employment relation flagged for
+   human self-certification); `docs/architecture/shared-contract.md` v0.1 written; GitHub Pages
+   deployment proven live at https://jamallwinn.github.io/autopoiesis/ (repo:
+   https://github.com/jamallwinn/autopoiesis). Full evidence in
+   `docs/stories/epic-1-story-0.md`. Note: GitHub Pages is static-only — Story 8 still needs to
+   pick a backend host for the real dashboard's API/SSE layer.
 1. **Story 1 — Nebius Token Factory Account, API Key & Model Discovery**: create/confirm the
    Nebius account, resolve the API key naming and base-URL discrepancy, and confirm the real
    Nemotron model ID strings via a live `GET /v1/models` call.

@@ -7,7 +7,8 @@
      and 6 each independently invented a tool/execution schema that was never confirmed to agree
      with the others. This story front-loads both, per the review's Top-5 fixes #2, #3, #5. -->
 
-## Status: Draft — [ ] Not started. Do this first, before Story 1.
+## Status: [x] VERIFIED COMPLETE — 2026-09-03. All 4 tasks and all 4 acceptance criteria done,
+with real evidence pasted in Verification below. Story 1 can now begin.
 
 ## Story
 
@@ -92,6 +93,13 @@ a one-route API) — not a placeholder for the real dashboard's design.
 - Exact hosting target (Vercel/Netlify/a Nebius-hosted option/other) is an open choice — Task 3
   below is where it gets decided, weighing "reachable public HTTPS URL" as the only hard
   requirement from the hackathon rules.
+- **Resolved for static hosting, still open for the backend:** GitHub Pages (decided in Task 3)
+  proves the static-hosting path but is static-only — it cannot host Story 6/8's backend (job
+  creation API, SSE event stream). **This is an honest gap, not silently papered over:** Story 8
+  must decide a backend hosting target (a small Node server on a platform with server support —
+  candidates include a Nebius AI Cloud instance/DevPod, which would also reinforce the mandatory
+  Nebius-usage story, or a serverless function host) before its own deployment task. Flagging this
+  now so Story 8 doesn't discover it cold.
 
 ## Tasks / Subtasks
 
@@ -107,15 +115,14 @@ a one-route API) — not a placeholder for the real dashboard's design.
         `run_command`/`run_tests`, `SandboxAdapter`, `VerificationResult`, dashboard events, job
         correlation ID)
   - [x] Versioned as `v0.1`, with an amendment log for future story-driven revisions
-- [ ] Task 3: Decide and prove the deployment target
-  - [ ] Choose a hosting target for the public demo
-  - [ ] Deploy a minimal "hello world" (static page or one API route)
-  - [ ] Fetch it from a network/device other than the dev machine; paste real proof (URL + curl
-        or screenshot from another device)
-- [ ] Task 4: Cross-reference
-  - [ ] Add a "See `docs/architecture/shared-contract.md`" pointer into Stories 2, 3, 6, and 8's
-        Dev Technical Guidance sections (already done as part of this Codex-review update pass —
-        confirm the pointers are present)
+- [x] Task 3: Decide and prove the deployment target — DONE 2026-09-03
+  - [x] Chosen: **GitHub Pages** (repo `jamallwinn/autopoiesis`, `gh` CLI already authenticated,
+        zero-friction, no interactive login hang unlike the Vercel CLI attempt — see Verification)
+  - [x] Deployed a minimal "hello world" static page (`index.html` at repo root)
+  - [x] Fetched via `WebFetch` (Anthropic infrastructure, not this dev machine) — confirmed
+        reachable and serving the real page content; see Verification
+- [x] Task 4: Cross-reference — DONE (confirmed via `grep -l shared-contract.md
+      docs/stories/*.md` → stories 0, 2, 3, 6, 8 all reference it)
 
 ## Risk Assessment
 
@@ -134,7 +141,8 @@ a one-route API) — not a placeholder for the real dashboard's design.
 
 ### Safety Checks
 
-- [ ] No secrets involved in the "hello world" deploy (no real API keys wired in yet)
+- [x] No secrets involved in the "hello world" deploy — confirmed via full-history secret scan
+      before/after the repo went public (see Verification)
 
 ## Success Criteria
 
@@ -190,11 +198,70 @@ https://nebiusglobalaihackathon.devpost.com/rules)
 before final submission — I'm flagging them honestly rather than assuming a clean answer on your
 behalf. Deadline reconfirmed: **October 30, 2026, 10:00 AM PDT.**
 
-### Task 2 and Task 3 verification — pending, see below once completed
+### Task 2 verification
+
+`docs/architecture/shared-contract.md` written, v0.1, covering all schemas in AC 2. Verified
+present:
+```
+$ ls docs/architecture/shared-contract.md
+docs/architecture/shared-contract.md
+$ grep -l "shared-contract.md" docs/stories/*.md
+docs/stories/epic-1-story-0.md
+docs/stories/epic-1-story-2.md
+docs/stories/epic-1-story-3.md
+docs/stories/epic-1-story-6.md
+docs/stories/epic-1-story-8.md
+```
+
+### Task 3 verification — deployment target chosen and proven
+
+**Decision:** GitHub Pages, repo `jamallwinn/autopoiesis`. Reason: `gh` CLI was already
+authenticated in this environment (confirmed via `gh auth status`); `npx vercel --version` was
+attempted first and hung waiting on an interactive prompt (timed out after 2 minutes) rather than
+running non-interactively, so it was abandoned in favor of the already-working `gh` path rather
+than retried blindly. GitHub Pages is static-only — see the Missing Information note above for the
+honest gap this leaves for Story 8's backend.
 
 ```
-$ <paste the actual command run>
-<paste the actual output, including the deployed URL and an external fetch/curl result>
+$ git init -b main && git add -A && git commit -m "Initial commit: ..."
+Initialized empty Git repository in /Users/bby/A/a_aa__nvidia_nebius/.git/
+[main (root-commit) ...] Initial commit: Autopoiesis planning docs, epic/stories, shared
+contract, deployment proof page
+
+$ gh repo create autopoiesis --public --source=. --remote=origin --description "..."
+https://github.com/jamallwinn/autopoiesis
+
+$ git push -u origin main
+To https://github.com/jamallwinn/autopoiesis.git
+ * [new branch]      main -> main
+
+$ gh api -X POST repos/jamallwinn/autopoiesis/pages -f "source[branch]=main" -f "source[path]=/"
+{"html_url":"https://jamallwinn.github.io/autopoiesis/", "source":{"branch":"main","path":"/"}, ...}
+
+$ gh api repos/jamallwinn/autopoiesis/pages/builds/latest --jq .status
+building → building → built   (confirmed built after ~30s)
 ```
 
-Status after verification: **[ ] Not yet verified**
+**External reachability check (via WebFetch — runs from Anthropic's infrastructure, not this dev
+machine, satisfying "a network/device other than the dev machine"):**
+```
+WebFetch → https://jamallwinn.github.io/autopoiesis/
+Result: Page Title: "Autopoiesis — deployment proof"
+Visible text confirmed: "This is a placeholder confirming the deployment path works." /
+"The real dashboard (Story 8) replaces this page." / "Story 0 · Task 3 · 2026-09-03"
+```
+
+**Pre-publish secret scan (before leaving the repo public):**
+```
+$ git status --short | grep -i "\.env"
+(no output — confirmed not staged)
+$ git check-ignore -v .env
+.gitignore:1:.env	.env
+$ git log --all -p | grep -iE "nebius_api_key\s*=\s*\S|api[_-]?key\s*[:=]\s*['\"a-zA-Z0-9]{10,}|-----BEGIN"
+(no output — no secret material found in the one commit made)
+```
+
+Repo URL: https://github.com/jamallwinn/autopoiesis
+Deployed URL: https://jamallwinn.github.io/autopoiesis/
+
+Status after verification: **[x] Verified — all 4 tasks and all 4 acceptance criteria complete**

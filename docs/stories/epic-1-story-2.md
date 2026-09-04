@@ -4,7 +4,8 @@
 <!-- Context: Epic 1 (Autopoiesis), Story 2 of 10 (Track A) — depends on Story 0's contract and Story 1's confirmed endpoint/model -->
 <!-- Revised 2026-09-03 after Codex adversarial review, docs/reviews/codex-adversarial-review-1.md §4.1-4.3 -->
 
-## Status: Draft — [ ] Not started (blocked on Story 0 and Story 1)
+## Status: [x] VERIFIED COMPLETE — 2026-09-04. All 6 acceptance criteria met with real evidence
+below, including one real bug found and fixed during Task 4 (timeout misclassification).
 
 ## Story
 
@@ -93,26 +94,41 @@ breaking the ACP integration later.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Scaffold the Node/TypeScript project
-  - [ ] `npm init`, install `openai`, `typescript`, `dotenv` (or equivalent env loader)
-  - [ ] Confirm `.env` loading picks up `NEBIUS_API_KEY` from Story 1
-- [ ] Task 2: Implement the response normalizer
-  - [ ] Write the raw-response → `ToolInvocation[]` normalizer per Story 0's contract
-  - [ ] Unit-test it against a real captured response (not a hand-written fixture) from Task 3
-- [ ] Task 3: Verify tool-calling mode and implement `runAgentTask()`
-  - [ ] Send a request with the Story 0 tool schema and a trivial coding prompt; determine native
-        vs. fallback mode from the real response shape
-  - [ ] Implement `runAgentTask()` with history/iteration-cap/timeout/cancellation per AC 2
-  - [ ] Run at least 3 distinct prompts; record real success rate
-- [ ] Task 4: Failure-mode matrix
-  - [ ] Test rate-limit (429), server error (5xx), timeout, malformed tool args, empty/refusal
-        response, and context overflow — each with real induced conditions (e.g., a deliberately
-        oversized prompt for context overflow, a bad endpoint for timeout) where possible; where a
-        condition can't be induced live (e.g., real 429 without abusing the API), document the
-        retry/backoff code path and test it against a mocked response instead, and say so
-        explicitly rather than claiming a live test that didn't happen
-  - [ ] Confirm retryable vs. non-retryable classification behaves as specified; paste real output
-- [ ] Task 5: Record the language decision and rationale in this file's Verification section
+- [x] Task 1: Scaffold the Node/TypeScript project — DONE
+  - [x] `npm init`, installed `openai@7.10.0`, `typescript@7.0.2`, `tsx@4.23.13`, `dotenv@17.4.2`
+        in `app/` (note: `npm install` took several minutes — slow registry/network in this
+        environment, not a project issue; first attempt timed out at 2min, retried successfully)
+  - [x] Confirmed `.env` loading picks up `NEBIUS_API_KEY` from Story 1 — see Verification
+- [x] Task 2: Implement the response normalizer — DONE (`app/src/normalizer.ts`)
+  - [x] Written per Story 0's contract, converting real OpenAI-shaped `tool_calls` to
+        `ToolInvocation[]`
+  - [x] Unit-tested against a real captured response saved to disk from a live Task 3 run (not a
+        hand-written fixture) — see Verification
+- [x] Task 3: Verify tool-calling mode and implement `runAgentTask()` — DONE
+  - [x] Sent a real request with the coding-tool schema; **native mode confirmed** — real OpenAI
+        `tool_calls` array shape, `finish_reason: "tool_calls"` — no fallback JSON mode needed
+  - [x] Implemented `runAgentTask()` (`app/src/agentLoop.ts`) with history construction,
+        tool-execution dispatch, tool-result re-insertion, iteration cap, wall-clock cap,
+        cancellation (`AbortSignal`), and defined terminal states
+  - [x] Ran 3 distinct prompts — **3/3 completed successfully** (100%), each a real multi-turn
+        write→test→summarize cycle; see Verification
+- [x] Task 4: Failure-mode matrix — DONE, 6/6 conditions passing after fixing one real bug found
+      along the way
+  - [x] Rate-limit (429) — MOCKED (cannot induce live without abusing the API); tested against
+        `withRetry` directly
+  - [x] Server error (5xx) — MOCKED, same reason
+  - [x] Timeout — REAL, induced via a 1ms client timeout. **First run FAILED**: classification
+        checked `err.name` but the SDK actually sets `err.constructor.name`, not an own `.name`
+        property — every real timeout was silently misclassified as non-retryable. Fixed in
+        `app/src/retry.ts`; re-run confirmed PASS. Not glossed over — see Verification for both
+        runs.
+  - [x] Malformed tool-call arguments — REAL code path (`normalizeToolCalls`), realistic malformed
+        JSON input; confirmed it flags `__PARSE_ERROR__` rather than throwing
+  - [x] Empty response (no choices) — REAL code path, confirmed graceful `[]` return, not a hang
+  - [x] Context-length overflow — REAL, induced via a 2M-word prompt; confirmed real HTTP 400,
+        classified non-retryable
+- [x] Task 5: Record the language decision — DONE, Node/TypeScript, rationale unchanged from the
+      plan (avoids a cross-language boundary with the JS/TS-only ACP SDK in Story 6)
 
 ## Risk Assessment
 
@@ -152,9 +168,103 @@ breaking the ACP integration later.
 
 ## Verification (fill in when the work is actually done — do not pre-fill or fabricate)
 
+### Task 1 — env loading
+
 ```
-$ <paste the actual command run>
-<paste the actual output>
+$ cd app && node_modules/.bin/tsx scripts/check-env.ts
+NEBIUS_API_KEY present: true
+NEBIUS_API_KEY length: 236
 ```
 
-Status after verification: **[ ] Not yet verified**
+### Task 3 — tool-calling mode determination (native, confirmed)
+
+```
+$ node_modules/.bin/tsx scripts/test-tool-calling.ts
+finish_reason: tool_calls
+has tool_calls field: true
+tool_calls value: [{"id":"chatcmpl-tool-...","function":{"arguments":"{\"relativePath\": \"solution.py\", ...}","name":"coding.write_file"},"type":"function"}]
+content:
+```
+Real OpenAI-shaped `tool_calls` array — native mode, no fallback needed.
+
+### Task 2 — normalizer unit test against the real captured response
+
+```
+$ node_modules/.bin/tsx scripts/test-normalizer.ts
+=== Normalized ToolInvocation[] from REAL captured response ===
+[
+  {
+    "id": "chatcmpl-tool-523999a870564f979242db24fef91e53",
+    "name": "coding.write_file",
+    "arguments": { "relativePath": "solution.py", "content": "def reverse_string(s): ...", "encoding": "utf8" },
+    "source": "native"
+  }
+]
+
+=== UNIT TEST PASSED — normalizer correctly parsed the real captured response ===
+```
+
+### Task 3 (continued) — `runAgentTask()`, 3 distinct prompts + deliberate iteration-cap test
+
+```
+$ node_modules/.bin/tsx scripts/test-agent-loop.ts
+=== PROMPT 1/3: is_palindrome ===  outcome.status: completed  iterations used: 3
+=== PROMPT 2/3: fizzbuzz ===       outcome.status: completed  iterations used: 3
+=== PROMPT 3/3: factorial ===      outcome.status: completed  iterations used: 3 (4 on re-run)
+
+=== SUCCESS RATE ===
+3/3 completed successfully
+
+=== DELIBERATE ITERATION-CAP TEST (maxIterations: 1, task needs 2+ turns) ===
+outcome.status: max_iterations_exceeded
+tool calls made before cap hit: coding.write_file
+CONFIRMED: iteration cap correctly stopped the loop rather than hanging or looping forever.
+```
+Regression re-run after Task 4's retry-wiring change: still 3/3 completed, iteration-cap test still
+correctly stops the loop — no regression introduced.
+
+### Task 4 — failure-mode matrix, including a real bug found and fixed
+
+**First run** (timeout classification bug found):
+```
+[PASS] (MOCKED) HTTP 429 rate limit
+[PASS] (MOCKED) HTTP 5xx server error
+[FAIL] (REAL) Request timeout: Classified as non_retryable/UNKNOWN   ← BUG
+[PASS] (REAL) Malformed tool-call arguments
+[PASS] (REAL) Empty response (no choices)
+[PASS] (REAL) Context-length overflow
+Overall: SOME FAILED (5/6)
+```
+Root cause investigated directly (a one-off debug script, since removed): the openai SDK throws
+`APIConnectionTimeoutError` as `err.constructor.name`, not as an own `err.name` property —
+`classifyError`'s check for `e.name === "APIConnectionTimeoutError"` never matched, so every real
+timeout silently fell through to `non_retryable/UNKNOWN`. Fixed in `app/src/retry.ts` to check
+`e.constructor?.name` instead.
+
+**Re-run after the fix:**
+```
+[PASS] (MOCKED) HTTP 429 rate limit: Retried 3 times then succeeded
+[PASS] (MOCKED) HTTP 5xx server error: Retried 3 times (capped), then surfaced as retryable/SERVER_ERROR_503
+[PASS] (REAL) Request timeout: Classified as retryable/TIMEOUT
+[PASS] (REAL) Malformed tool-call arguments: flagged __PARSE_ERROR__, did not throw
+[PASS] (REAL) Empty response (no choices): returned [] rather than throwing
+[PASS] (REAL) Context-length overflow: 400 `default_max_tokens` (-1738338) must be greater than 0 ... classified non_retryable/BAD_REQUEST
+Overall: ALL PASSED (6/6)
+```
+
+### AC 4 — scope discipline (no sandbox/chain code)
+
+```
+$ find app -type f -not -path "*/node_modules/*" | sort
+app/package-lock.json  app/package.json  app/scripts/check-env.ts  app/scripts/test-agent-loop.ts
+app/scripts/test-failure-modes.ts  app/scripts/test-normalizer.ts  app/scripts/test-tool-calling.ts
+app/src/agentLoop.ts  app/src/nemotronClient.ts  app/src/normalizer.ts  app/src/retry.ts
+app/src/tools.ts  app/src/types.ts  app/tsconfig.json
+
+$ grep -rli "contree\|virtuals\|acp-node\|acp-cli\|blockchain\|wallet" app/src app/scripts
+CONFIRMED: no sandbox/chain references in src or scripts
+```
+
+Status after verification: **[x] Verified — all 6 acceptance criteria met with real evidence
+above, including one real bug found via the story's own failure-mode testing and fixed before
+being marked complete.**

@@ -90,10 +90,14 @@ for no real reason). Story 0 is a hard prerequisite for everything else. After t
    against `nvidia/nemotron-3-super-120b-a12b` succeeded with real output. Full evidence in
    `docs/stories/epic-1-story-1.md`. One non-blocking follow-up: billing-credit display not
    confirmable via API, flagged for manual console check.
-2. **Story 2 — Standalone Nemotron Reasoning Loop**: a full bounded agent loop (`runAgentTask()`,
-   not a single reasoning step) against the confirmed Nebius/Nemotron endpoint, producing
-   normalized `ToolInvocation`s per Story 0's contract, with zero sandbox/chain involvement,
-   tested standalone against a broad failure-mode matrix (not just auth failures).
+2. **[x] Story 2 — Standalone Nemotron Reasoning Loop** — **VERIFIED COMPLETE 2026-09-04.** Native
+   OpenAI-style tool-calling confirmed live (no fallback needed); `runAgentTask()` implemented
+   (`app/src/agentLoop.ts`) with iteration cap, wall-clock cap, cancellation, defined terminal
+   states; 3/3 test prompts completed via real multi-turn write→test→summarize cycles; iteration
+   cap demonstrated stopping a real run; 6/6 failure-mode matrix conditions passing — including a
+   real timeout-misclassification bug found and fixed (`app/src/retry.ts`: the SDK throws
+   `APIConnectionTimeoutError` as `constructor.name`, not an own `.name` property). Full evidence
+   in `docs/stories/epic-1-story-2.md`.
 3. **Story 3 — Code Execution via Token Factory Sandboxes (Contree)**: a versioned
    `SandboxAdapter` implementation (per Story 0's contract) giving the reasoning loop real,
    security-isolated write/execute/test capability against a Contree sandbox — local execution is

@@ -55,3 +55,31 @@ stand — not a substitute for the per-story proof.
   nvidia/nemotron-3-super-120b-a12b succeeded, HTTP 200, real model response returned.
 2026-09-04 00:11 — Story 1 — COMPLETE — all 5 acceptance criteria verified with real evidence.
   Task 4 (billing confirmation) flagged as a non-blocking manual follow-up for the human.
+2026-09-04 00:11 — Committed + pushed Story 1 (a050097).
+
+2026-09-04 00:15 — Story 2 — STARTED — beginning Task 1 (scaffold Node/TypeScript project)
+2026-09-04 00:16 — Story 2 Task 1 — package.json created (app/), npm install of
+  openai/typescript/tsx/dotenv running much longer than expected (first attempt timed out at 2min,
+  retried and moved to background). Waiting on it before continuing — not proceeding on an
+  unconfirmed dependency state.
+2026-09-04 00:25 — Story 2 Task 1 — DONE — npm install completed in background (openai 7.10.0,
+  typescript 7.0.2, tsx, dotenv). tsconfig.json added. Confirmed .env loading picks up
+  NEBIUS_API_KEY via app/scripts/check-env.ts.
+2026-09-04 00:30 — Story 2 Task 3 (tool-calling mode) — DONE — real request with coding-tool
+  schema returned real OpenAI-shaped tool_calls array, finish_reason: tool_calls. NATIVE mode
+  confirmed, no fallback JSON mode needed.
+2026-09-04 00:33 — Story 2 Task 2 (normalizer) — DONE — wrote app/src/normalizer.ts, unit-tested
+  against the real captured response saved to disk from the Task 3 run (not a hand fixture) —
+  passed.
+2026-09-04 00:40 — Story 2 Task 3 (runAgentTask) — DONE — implemented app/src/agentLoop.ts with
+  iteration cap, wall-clock cap, cancellation, defined terminal states. Ran 3 distinct prompts:
+  3/3 completed via real multi-turn write->test->summarize cycles. Deliberate iteration-cap test
+  (maxIterations=1) correctly stopped a real run rather than hanging.
+2026-09-04 00:45 — Story 2 Task 4 (failure-mode matrix) — first run 5/6, REAL BUG FOUND: timeout
+  classification checked err.name but the openai SDK sets err.constructor.name instead — every
+  real timeout was silently misclassified as non-retryable. Root-caused with a one-off debug
+  script (removed after use), fixed in app/src/retry.ts, re-ran: 6/6 passed. Re-ran
+  test-agent-loop.ts afterward as a regression check — still 3/3, no regression from the fix.
+2026-09-04 00:50 — Story 2 — COMPLETE — all 6 acceptance criteria verified with real evidence,
+  including the timeout bug found+fixed via the story's own testing (not glossed over). Scope
+  discipline confirmed: no Contree/Virtuals/chain references anywhere in app/.

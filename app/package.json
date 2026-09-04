@@ -1,0 +1,19 @@
+{
+  "name": "autopoiesis-brain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autopoiesis reasoning loop (Story 2) — Nebius Token Factory + NVIDIA Nemotron",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test:toolcalling": "tsx scripts/test-tool-calling.ts",
+    "test:agentloop": "tsx scripts/test-agent-loop.ts",
+    "test:failures": "tsx scripts/test-failure-modes.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "openai": "^7.10.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}

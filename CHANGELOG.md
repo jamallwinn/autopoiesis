@@ -28,3 +28,11 @@ the story whose Verification section holds the actual proof.
   than previously known), and a real chat-completion smoke test succeeded. Updated
   `research/RESEARCH.md` §7.1 with all real findings. One non-blocking item flagged for manual
   follow-up: billing-credit confirmation isn't available via API.
+- **Story 2 complete and verified**: scaffolded the `app/` Node/TypeScript project; confirmed
+  native OpenAI-style tool-calling works against Nemotron (no fallback needed); implemented
+  `runAgentTask()` with iteration cap, timeout, cancellation, and defined terminal states; 3/3 test
+  prompts completed real multi-turn write→test→summarize cycles; deliberate iteration-cap test
+  proved the cap actually stops a run. Failure-mode matrix: 6/6 passing, including a real bug found
+  and fixed along the way — timeout errors were being silently misclassified as non-retryable
+  because the openai SDK sets `err.constructor.name`, not an own `.name` property; caught by the
+  story's own test, fixed in `app/src/retry.ts`, re-verified with no regression.

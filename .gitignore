@@ -7,3 +7,5 @@ build/
 *.log
 .DS_Store
 .claude/scheduled_tasks.lock
+.tmp-real-response.json
+app/dist/

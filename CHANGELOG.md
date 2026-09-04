@@ -22,3 +22,9 @@ the story whose Verification section holds the actual proof.
   evidence in `docs/stories/epic-1-story-0.md`. Flagged forward: Story 8 still needs a backend
   hosting decision (GitHub Pages is static-only); residency/judge-employment eligibility items
   need the human operator's own self-certification.
+- **Story 1 complete and verified**: resolved the base-URL discrepancy by live test (both URLs
+  work but return different model lists; `api.tokenfactory.nebius.com` declared canonical as the
+  superset), added `NEBIUS_API_KEY` alias to `.env`, confirmed 6 real Nemotron model IDs (one more
+  than previously known), and a real chat-completion smoke test succeeded. Updated
+  `research/RESEARCH.md` §7.1 with all real findings. One non-blocking item flagged for manual
+  follow-up: billing-credit confirmation isn't available via API.

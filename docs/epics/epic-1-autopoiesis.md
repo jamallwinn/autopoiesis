@@ -83,9 +83,13 @@ for no real reason). Story 0 is a hard prerequisite for everything else. After t
    https://github.com/jamallwinn/autopoiesis). Full evidence in
    `docs/stories/epic-1-story-0.md`. Note: GitHub Pages is static-only — Story 8 still needs to
    pick a backend host for the real dashboard's API/SSE layer.
-1. **Story 1 — Nebius Token Factory Account, API Key & Model Discovery**: create/confirm the
-   Nebius account, resolve the API key naming and base-URL discrepancy, and confirm the real
-   Nemotron model ID strings via a live `GET /v1/models` call.
+1. **[x] Story 1 — Nebius Token Factory Account, API Key & Model Discovery** — **VERIFIED COMPLETE
+   2026-09-04.** Canonical base URL resolved (`api.tokenfactory.nebius.com`, confirmed superset of
+   the alternate URL by live test); `NEBIUS_API_KEY` alias added to `.env`; 6 real Nemotron model
+   IDs confirmed live (one more than previously known —`nvidia/Nemotron-3_5-Lightning`); smoke test
+   against `nvidia/nemotron-3-super-120b-a12b` succeeded with real output. Full evidence in
+   `docs/stories/epic-1-story-1.md`. One non-blocking follow-up: billing-credit display not
+   confirmable via API, flagged for manual console check.
 2. **Story 2 — Standalone Nemotron Reasoning Loop**: a full bounded agent loop (`runAgentTask()`,
    not a single reasoning step) against the confirmed Nebius/Nemotron endpoint, producing
    normalized `ToolInvocation`s per Story 0's contract, with zero sandbox/chain involvement,

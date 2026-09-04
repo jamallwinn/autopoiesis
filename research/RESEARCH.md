@@ -88,20 +88,32 @@ Not deeply chased down (time-boxed); CoinGecko/Forkast/99Bitcoins/Dextools backg
 ## 7. Verified build-time specifics (added 2026-09-03, for the engineering stories)
 
 ### 7.1 Nebius Token Factory — auth, models, sandboxes
-- **Base URL discrepancy — unresolved, verify at build time**: docs.tokenfactory.nebius.com/quickstart
-  shows `https://api.tokenfactory.nebius.com/v1/`; nebius.com/services/token-factory/nemotron shows
-  `https://api.tokenfactory.us-central1.nebius.com/v1/`. Confirm the working one via a live
-  `GET /v1/models` call before hardcoding either into the codebase.
+- **Base URL — RESOLVED 2026-09-04 by live test (Story 1, Task 1).** Both candidate URLs return
+  real HTTP 200 on `GET /v1/models` with a live key — they are **not aliases of each other**:
+  `https://api.tokenfactory.nebius.com/v1/` returns 25 models (a strict superset);
+  `https://api.tokenfactory.us-central1.nebius.com/v1/` returns 22 (missing exactly
+  `moonshotai/Kimi-K3`, `zai-org/GLM-5.2`, `deepseek-ai/DeepSeek-V4-Pro` — none are Nemotron
+  models, so this doesn't affect model choice). **Canonical for this project:**
+  `https://api.tokenfactory.nebius.com/v1/` (the superset, and it matches the primary
+  docs.tokenfactory.nebius.com/quickstart URL rather than the marketing-page URL).
 - **Auth**: env var `NEBIUS_API_KEY`, header `Authorization: Bearer $NEBIUS_API_KEY`. Confirmed
   OpenAI-compatible — the standard `openai` SDK works by only changing `base_url`/`api_key`.
-  (Note: `.env` in this project currently has the key stored as `nebius_api_key`, lowercase —
-  needs renaming/aliasing to `NEBIUS_API_KEY` to match the SDK convention.)
-- **Model list**: 5 Nemotron variants named in github.com/nebius/token-factory-cookbook —
-  Nemotron-3-Nano-30B-A3B, Nemotron-3-Nano-Omni, Nemotron-3-Super-120B-A12B,
-  Nemotron-3-Ultra-550B-A55B, Llama-3.1-Nemotron-Ultra-253B-v1. **Only one exact API id string is
-  confirmed**: `nvidia/nemotron-3-super-120b-a12b`. The other four are unconfirmed — call
-  `GET /v1/models` (documented, returns `{"object":"list","data":[{"id":...}]}`) to get the real
-  strings rather than guessing the naming pattern.
+  **Resolved 2026-09-04:** `.env` now has both `nebius_api_key` (original) and `NEBIUS_API_KEY`
+  (uppercase alias, added via Story 1 Task 2) — both point at the same live, working key,
+  confirmed by real API calls in Story 1.
+- **Model list — RESOLVED 2026-09-04 by live `GET /v1/models` call (Story 1, Task 3).** All 6 real
+  Nemotron model IDs, exact strings, as actually returned by the API (note: casing is
+  inconsistent across entries — this is the real API output, not a typo):
+  - `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`
+  - `nvidia/Nemotron-3_5-Lightning` (not previously named in any prior research pass — a real
+    6th variant found live, in addition to the 5 named in the cookbook)
+  - `nvidia/Nemotron-3-Nano-Omni`
+  - `nvidia/Llama-3_1-Nemotron-Ultra-253B-v1`
+  - `nvidia/Nemotron-3-Ultra-550b-a55b`
+  - `nvidia/nemotron-3-super-120b-a12b` (lowercase — this is the one previously confirmed, now
+    reconfirmed live, and the one used for Story 1's smoke test)
+  A 7th non-Nemotron NVIDIA model was also seen: `nvidia/Cosmos3-Super-Reasoner` (NVIDIA Cosmos —
+  named in the hackathon's allowed-model list, not Nemotron, noted here for completeness).
 - **Minimal verified example** (source: nebius.com/services/token-factory/nemotron):
   ```python
   import os

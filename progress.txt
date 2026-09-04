@@ -1,0 +1,18 @@
+AUTOPOIESIS — BUILD PROGRESS LOG
+Format: [timestamp] STORY — status — note
+Real, terminal-verifiable evidence for each item lives in that story's own Verification section
+under docs/stories/. This file is the running index of what's been attempted and where things
+stand — not a substitute for the per-story proof.
+
+2026-09-03 21:48 — Story 0 — STARTED — beginning Task 1 (eligibility preflight)
+2026-09-03 21:52 — Story 0 Task 1 — DONE — re-fetched live Devpost rules page. No confirmed
+  conflicts. Two items need human self-certification: geographic residency, employment/family
+  relation to organizers or judges. Deadline reconfirmed Oct 30 2026 10:00 AM PDT. Video-length
+  wording <3:00 (not ≤3:00) reconfirmed correct. Full findings in
+  docs/stories/epic-1-story-0.md Verification section.
+2026-09-03 21:52 — Story 0 — starting Task 2 (shared contract document)
+2026-09-03 21:58 — Story 0 Task 2 — DONE — wrote docs/architecture/shared-contract.md v0.1:
+  ToolInvocation/ToolResult, acp.*/coding.* namespace split + dispatcher, write_file schema,
+  run_command/run_tests schema, SandboxAdapter interface, VerificationResult submission gate,
+  dashboard event contract (8 event types + monotonic seq), job correlation ID shape.
+2026-09-03 21:58 — Story 0 — starting Task 3 (deployment target)
